@@ -27,7 +27,10 @@ export class QuizView {
   render(question, meta, onSelect) {
     const paddedNumber = padNumber(meta.number);
 
-    this.#refs.counter.textContent = `Pregunta ${paddedNumber} / ${meta.total}`;
+    // Solo el valor. La palabra "Pregunta" la antepone el CSS, que la
+    // retira en pantallas estrechas sin que la lógica se entere.
+    this.#refs.counter.textContent = `${paddedNumber} / ${meta.total}`;
+    this.#refs.counter.setAttribute('aria-label', `Pregunta ${paddedNumber} de ${meta.total}`);
     this.#refs.progressFill.style.width = `${meta.progressPercent}%`;
     this.#refs.progress.setAttribute('aria-valuenow', String(meta.progressPercent));
     this.#refs.quizKicker.textContent = `${paddedNumber} · ${QUESTION_KIND_LABELS[question.kind]}`;

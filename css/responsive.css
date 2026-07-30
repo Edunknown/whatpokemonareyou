@@ -1,0 +1,187 @@
+/* ==========================================================================
+   Ajustes responsive. Se carga en último lugar para poder afinar
+   lo que definen base / layout / pokeball / screens.
+   ========================================================================== */
+
+/* La cabecera no debe partirse nunca en dos líneas: es una barra de estado. */
+.topbar {
+  flex-wrap: nowrap;
+}
+
+.topbar-title,
+.counter {
+  white-space: nowrap;
+}
+
+/* La etiqueta del contador es decorativa y vive en el CSS: así puede
+   desaparecer en móvil sin tocar la lógica. El texto accesible completo
+   lo aporta el aria-label del elemento. */
+.counter::before {
+  content: 'Pregunta ';
+}
+
+/* --------------------------------------------------------------------------
+   Tablet y móvil grande
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .traits {
+    gap: 32px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Móvil
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  /* ---- Cabecera: se abrevia para que quepa en una sola línea ---- */
+  .topbar {
+    padding: 16px 18px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  .topbar-title-rest {
+    display: none;
+  }
+
+  .counter::before {
+    content: '';
+  }
+
+  /* ---- Márgenes laterales: se recuperan 24px de ancho útil ---- */
+  .landing {
+    padding: 24px 18px 56px;
+  }
+
+  .quiz {
+    padding: 16px 18px 56px;
+  }
+
+  .result {
+    padding: 8px 18px 64px;
+    gap: 32px;
+  }
+
+  /* ---- Portada ---- */
+  .kicker {
+    letter-spacing: 0.24em;
+    margin-bottom: 18px;
+  }
+
+  .landing p {
+    font-size: 16px;
+    margin-top: 22px;
+  }
+
+  .btn-primary {
+    margin-top: 32px;
+    width: 100%;
+    max-width: 320px;
+    padding: 18px 32px;
+  }
+
+  .landing-foot {
+    margin-top: 20px;
+    letter-spacing: 0.1em;
+  }
+
+  /* ---- Quiz ---- */
+  .quiz h2 {
+    margin-bottom: 30px;
+  }
+
+  .choice {
+    gap: 14px;
+    padding: 18px 4px;
+  }
+
+  .choice:hover {
+    padding-left: 10px;
+  }
+
+  .scenario {
+    min-width: 0;
+    padding: 24px 22px;
+    min-height: 0;
+  }
+
+  /* ---- Resultado ---- */
+  .pokedex-entry {
+    padding: 16px 18px;
+    margin-bottom: 22px;
+  }
+
+  .result-body > p {
+    font-size: 16px;
+  }
+
+  /* Los dos bloques de rasgos, uno al lado del otro, se quedan sin
+     aire en 375px: pasan a repartirse el ancho a partes iguales. */
+  .traits {
+    gap: 20px;
+  }
+
+  .traits > div {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* ---- Botones de acción: centrados y del mismo ancho ---- */
+  .result-actions,
+  .error-actions {
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .btn-share,
+  .btn-ghost,
+  .btn-retry,
+  .btn-home {
+    flex: 1 1 100%;
+    max-width: 320px;
+    margin-inline: auto;
+    padding: 17px 24px;
+    text-align: center;
+  }
+
+  .copied-note {
+    text-align: center;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Móvil pequeño
+   -------------------------------------------------------------------------- */
+@media (max-width: 400px) {
+  .topbar {
+    letter-spacing: 0.08em;
+  }
+
+  /* Ya no caben en dos columnas legibles: se apilan. */
+  .traits {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Alturas reducidas (móvil en horizontal)
+   -------------------------------------------------------------------------- */
+@media (max-height: 560px) and (orientation: landscape) {
+  .pokeball--hero {
+    --pokeball-size: 64px;
+    margin-bottom: 16px;
+  }
+
+  .landing {
+    padding-bottom: 32px;
+  }
+
+  .landing p {
+    margin-top: 16px;
+  }
+
+  .btn-primary {
+    margin-top: 22px;
+  }
+}
