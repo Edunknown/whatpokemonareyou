@@ -3,54 +3,69 @@ import { STAT_LABELS } from '../constants/ui.js';
 import { clamp, formatPokemonName, padNumber } from '../utils/formatUtils.js';
 
 /**
- * Construcción del modelo de resultado a partir de las puntuaciones
- * y de los datos crudos de la PokeAPI. Lógica pura, sin DOM ni red.
+ * Construcción del modelo de resultado a partir de las puntuaciones,
+ * de los datos de la PokeAPI y de la entrada real de la Pokédex.
+ * Lógica pura: sin DOM ni red.
  */
 
 /**
- * Elige un id del conjunto de candidatos de forma determinista:
- * las mismas respuestas producen siempre el mismo Pokémon.
+ * Selecciona una ventana de candidatos del conjunto, empezando en una
+ * posición derivada de las respuestas: así el test es reproducible y
+ * a la vez no analiza siempre los mismos Pokémon.
  * @param {readonly number[]} pool Ids candidatos, no vacío.
  * @param {readonly number[]} answers Opciones elegidas por el usuario.
- * @returns {number}
+ * @param {number} sampleSize Cuántos candidatos analizar a fondo.
+ * @returns {number[]}
  */
-export function pickPokemonId(pool, answers) {
+export function selectCandidates(pool, answers, sampleSize) {
+  if (pool.length <= sampleSize) {
+    return [...pool];
+  }
   const seed = answers.reduce((sum, answer, index) => sum + (answer + 1) * (index * 7 + 13), 0);
-  return pool[seed % pool.length];
+  const start = seed % pool.length;
+  return Array.from({ length: sampleSize }, (_, offset) => pool[(start + offset) % pool.length]);
 }
 
 /**
- * Porcentaje de afinidad según cuánto domina el tipo primario
- * sobre el secundario.
- * @param {Readonly<Record<string, number>>} scores
- * @param {string} primaryKey
- * @param {string} secondaryKey
- * @param {{MATCH_PCT_MIN: number, MATCH_PCT_MAX: number}} config
+ * Porcentaje de afinidad: combina cuánto domina tu tipo principal con
+ * lo bien que la entrada de Pokédex encaja con tu perfil.
+ * @param {object} params
  * @returns {number}
  */
-function computeMatchPercent(scores, primaryKey, secondaryKey, config) {
+function computeMatchPercent({ scores, primaryKey, secondaryKey, matchedWordCount, config }) {
   const primaryScore = scores[primaryKey];
   const secondaryScore = scores[secondaryKey] ?? 0;
   const dominance = primaryScore / ((primaryScore + secondaryScore) || 1);
-  const raw = Math.round(config.MATCH_PCT_MIN + dominance * (config.MATCH_PCT_MAX - config.MATCH_PCT_MIN));
-  return clamp(raw, config.MATCH_PCT_MIN, config.MATCH_PCT_MAX);
+
+  const range = config.MATCH_PCT_MAX - config.MATCH_PCT_MIN;
+  // El perfil pesa dos tercios; lo que dice la Pokédex, el tercio restante.
+  const descriptionBonus = Math.min(1, matchedWordCount / 3);
+  const blended = dominance * (2 / 3) + descriptionBonus * (1 / 3);
+
+  return clamp(
+    Math.round(config.MATCH_PCT_MIN + blended * range),
+    config.MATCH_PCT_MIN,
+    config.MATCH_PCT_MAX,
+  );
 }
 
 /**
- * Redacta la explicación personalizada del resultado.
- * @param {string} pokemonName
- * @param {string} pokemonTypesText Tipos del Pokémon ya traducidos ("Fuego / Volador").
- * @param {object} primaryProfile Perfil del tipo dominante del usuario.
- * @param {object} secondaryProfile Perfil del tipo secundario del usuario.
+ * Redacta la explicación citando lo que la Pokédex dice del Pokémon.
+ * @param {object} params
  * @returns {string}
  */
-function composeExplanation(pokemonName, pokemonTypesText, primaryProfile, secondaryProfile) {
+function composeExplanation({ name, typesText, primaryProfile, secondaryProfile, matchedWords }) {
   const secondaryTrait = secondaryProfile.adj.split(',')[0];
-  return (
+  const base =
     `Durante el test has demostrado ser ${primaryProfile.adj}, con un lado más ${secondaryTrait}. ` +
-    `Esa mezcla encaja de lleno con ${pokemonName}, un Pokémon de tipo ${pokemonTypesText} ` +
-    `que, igual que tú, ${primaryProfile.line}.`
-  );
+    `Por eso te ha tocado ${name}, un Pokémon de tipo ${typesText} que, igual que tú, ${primaryProfile.line}.`;
+
+  if (matchedWords.length === 0) {
+    return base;
+  }
+
+  const highlighted = matchedWords.slice(0, 3).join(', ');
+  return `${base} Su propia entrada de la Pokédex lo confirma: habla de ${highlighted}, justo el terreno donde tú te mueves.`;
 }
 
 /**
@@ -69,13 +84,15 @@ function toDisplayType(apiTypeEntry) {
  * Construye el modelo de vista del resultado final.
  * @param {object} params
  * @param {object} params.pokemon Respuesta cruda de /pokemon/{id}.
+ * @param {{description: string, genus: string}} params.entry Entrada de Pokédex elegida.
+ * @param {readonly string[]} params.matchedWords Palabras del perfil halladas en la entrada.
  * @param {string} params.primaryKey Tipo dominante del usuario.
  * @param {string} params.secondaryKey Tipo secundario del usuario.
  * @param {Readonly<Record<string, number>>} params.scores Puntuaciones finales.
  * @param {object} params.config Configuración de la aplicación.
  * @returns {object} Modelo listo para pintar en la vista de resultado.
  */
-export function buildResult({ pokemon, primaryKey, secondaryKey, scores, config }) {
+export function buildResult({ pokemon, entry, matchedWords, primaryKey, secondaryKey, scores, config }) {
   const name = formatPokemonName(pokemon.name);
   const officialArtwork = pokemon.sprites.other?.['official-artwork']?.front_default;
   const artwork = officialArtwork ?? pokemon.sprites.front_default;
@@ -96,9 +113,23 @@ export function buildResult({ pokemon, primaryKey, secondaryKey, scores, config 
     name,
     artwork,
     dexNumber: padNumber(pokemon.id, 3),
-    matchPercent: computeMatchPercent(scores, primaryKey, secondaryKey, config),
+    genus: entry.genus,
+    pokedexEntry: entry.description,
+    matchPercent: computeMatchPercent({
+      scores,
+      primaryKey,
+      secondaryKey,
+      matchedWordCount: matchedWords.length,
+      config,
+    }),
     types: displayTypes,
-    explanation: composeExplanation(name, typesText, primaryProfile, secondaryProfile),
+    explanation: composeExplanation({
+      name,
+      typesText,
+      primaryProfile,
+      secondaryProfile,
+      matchedWords,
+    }),
     strengths: primaryProfile.fort,
     weaknesses: primaryProfile.debil,
     stats,

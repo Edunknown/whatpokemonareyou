@@ -25,7 +25,7 @@ export class PokeApiService {
   }
 
   /**
-   * Datos completos de un Pokémon por id o nombre.
+   * Datos de combate y sprites de un Pokémon.
    * @param {number|string} idOrName
    * @returns {Promise<object>}
    */
@@ -34,7 +34,16 @@ export class PokeApiService {
   }
 
   /**
-   * Ids de Pokémon (ordenados y acotados a la Pokédex nacional) que
+   * Datos de especie: es donde vive la entrada de la Pokédex.
+   * @param {number|string} idOrName
+   * @returns {Promise<object>}
+   */
+  fetchSpecies(idOrName) {
+    return this.#fetchJson(`pokemon-species/${idOrName}`);
+  }
+
+  /**
+   * Ids de Pokémon (ordenados y acotados a la generación configurada) que
    * comparten los dos tipos indicados. Si la intersección es vacía,
    * devuelve todos los del tipo primario.
    * @param {string} primaryType Clave del tipo dominante.
@@ -54,6 +63,60 @@ export class PokeApiService {
     const intersection = primaryIds.filter((id) => secondaryIds.has(id));
     const pool = intersection.length > 0 ? intersection : primaryIds;
     return pool.sort((a, b) => a - b);
+  }
+
+  /**
+   * Descarga la entrada de Pokédex de varios candidatos a la vez.
+   * Los que fallen se descartan en silencio: basta con que quede alguno.
+   * @param {readonly number[]} ids
+   * @param {readonly string[]} languages Idiomas por orden de preferencia.
+   * @returns {Promise<{id: number, description: string, genus: string}[]>}
+   */
+  async fetchPokedexEntries(ids, languages) {
+    const results = await Promise.allSettled(ids.map((id) => this.fetchSpecies(id)));
+
+    return results
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => {
+        const species = result.value;
+        return {
+          id: species.id,
+          description: PokeApiService.#pickLocalizedText(
+            species.flavor_text_entries,
+            languages,
+            'flavor_text',
+          ),
+          genus: PokeApiService.#pickLocalizedText(species.genera, languages, 'genus'),
+        };
+      })
+      .filter((entry) => entry.description.length > 0);
+  }
+
+  /**
+   * Elige un texto en el primer idioma disponible de la lista de preferencia.
+   * @param {readonly object[]} entries Entradas con campo `language`.
+   * @param {readonly string[]} languages Códigos de idioma por preferencia.
+   * @param {string} field Nombre del campo de texto.
+   * @returns {string} Texto ya limpio, o cadena vacía si no hay ninguno.
+   */
+  static #pickLocalizedText(entries, languages, field) {
+    for (const language of languages) {
+      const match = entries.find((entry) => entry.language.name === language);
+      if (match) {
+        return PokeApiService.#cleanFlavorText(match[field]);
+      }
+    }
+    return '';
+  }
+
+  /**
+   * Las entradas de Pokédex traen saltos de página y de línea heredados
+   * de los juegos originales; aquí se convierten en un párrafo normal.
+   * @param {string} text
+   * @returns {string}
+   */
+  static #cleanFlavorText(text) {
+    return text.replace(/\s+/g, ' ').trim();
   }
 
   /**

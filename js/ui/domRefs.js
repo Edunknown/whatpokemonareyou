@@ -3,48 +3,62 @@
  * Si un id cambia en el HTML, solo hay que tocar este archivo.
  */
 
+/** Ids requeridos, agrupados por área, con el nombre con el que se exponen. */
+const REQUIRED_ELEMENTS = Object.freeze({
+  driftLayer: 'driftLayer',
+  progress: 'progress',
+  progressFill: 'progressFill',
+  counter: 'counter',
+
+  screenLanding: 'screen-landing',
+  screenQuiz: 'screen-quiz',
+  screenLoading: 'screen-loading',
+  screenResult: 'screen-result',
+  screenError: 'screen-error',
+
+  landingInner: 'landingInner',
+  heroPokeballSlot: 'heroPokeball',
+  loadingPokeballSlot: 'loadingPokeball',
+
+  quizKicker: 'quizKicker',
+  quizText: 'quizText',
+  quizOptions: 'quizOptions',
+
+  artworkWrap: 'artworkWrap',
+  revealFlash: 'revealFlash',
+  resultAffinity: 'resAffinity',
+  resultArtwork: 'resArt',
+  resultDexNumber: 'resDex',
+  resultBody: 'resultBody',
+  resultName: 'resName',
+  resultTypes: 'resTypes',
+  resultGenus: 'resGenus',
+  resultPokedexEntry: 'resPokedex',
+  resultExplanation: 'resExplanation',
+  resultStrengths: 'resFort',
+  resultWeaknesses: 'resDebil',
+  resultStats: 'resStats',
+  copiedNote: 'copiedNote',
+
+  buttonStart: 'btnStart',
+  buttonShare: 'btnShare',
+  buttonRepeat: 'btnRepeat',
+  buttonRetry: 'btnRetry',
+  buttonHome: 'btnHome',
+});
+
 /**
  * @returns {Record<string, HTMLElement>} Referencias a los nodos de la app.
+ * @throws {Error} Si falta alguno de los elementos requeridos.
  */
 export function getDomRefs() {
-  const byId = (id) => {
-    const element = document.getElementById(id);
-    if (!element) {
-      throw new Error(`Elemento requerido no encontrado: #${id}`);
-    }
-    return element;
-  };
-
-  return {
-    progress: byId('progress'),
-    progressFill: byId('progressFill'),
-    counter: byId('counter'),
-
-    screenLanding: byId('screen-landing'),
-    screenQuiz: byId('screen-quiz'),
-    screenLoading: byId('screen-loading'),
-    screenResult: byId('screen-result'),
-    screenError: byId('screen-error'),
-
-    quizKicker: byId('quizKicker'),
-    quizText: byId('quizText'),
-    quizOptions: byId('quizOptions'),
-
-    resultAffinity: byId('resAffinity'),
-    resultArtwork: byId('resArt'),
-    resultDexNumber: byId('resDex'),
-    resultName: byId('resName'),
-    resultTypes: byId('resTypes'),
-    resultExplanation: byId('resExplanation'),
-    resultStrengths: byId('resFort'),
-    resultWeaknesses: byId('resDebil'),
-    resultStats: byId('resStats'),
-    copiedNote: byId('copiedNote'),
-
-    buttonStart: byId('btnStart'),
-    buttonShare: byId('btnShare'),
-    buttonRepeat: byId('btnRepeat'),
-    buttonRetry: byId('btnRetry'),
-    buttonHome: byId('btnHome'),
-  };
+  return Object.fromEntries(
+    Object.entries(REQUIRED_ELEMENTS).map(([name, id]) => {
+      const element = document.getElementById(id);
+      if (!element) {
+        throw new Error(`Elemento requerido no encontrado: #${id}`);
+      }
+      return [name, element];
+    }),
+  );
 }

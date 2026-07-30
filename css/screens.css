@@ -13,7 +13,8 @@
   position: relative;
 }
 
-.pokeball {
+/* Silueta grande de pokéball detrás del titular. */
+.pokeball-ghost {
   position: absolute;
   z-index: 0;
   width: min(480px, 78vw);
@@ -22,14 +23,14 @@
   pointer-events: none;
 }
 
-.pokeball-ring {
+.pokeball-ghost-ring {
   position: absolute;
   inset: 0;
   border: 2px solid var(--red);
   border-radius: 50%;
 }
 
-.pokeball-band {
+.pokeball-ghost-band {
   position: absolute;
   top: 50%;
   left: 0;
@@ -39,7 +40,7 @@
   transform: translateY(-50%);
 }
 
-.pokeball-core {
+.pokeball-ghost-core {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -49,6 +50,11 @@
   border: 2px solid var(--red);
   border-radius: 50%;
   background: var(--bg);
+}
+
+.hero-pokeball-slot {
+  display: flex;
+  justify-content: center;
 }
 
 .landing-inner {
@@ -275,13 +281,9 @@
   animation: fadeUp 0.5s ease both;
 }
 
-.spinner {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  border: 4px solid rgba(236, 43, 59, 0.18);
-  border-top-color: var(--red);
-  animation: spin 1s linear infinite;
+.loading-pokeball-slot {
+  display: flex;
+  justify-content: center;
 }
 
 .loading-main {
@@ -346,13 +348,59 @@
   background: radial-gradient(circle, rgba(236, 43, 59, 0.22), transparent 60%);
 }
 
+/* La flotación vive en el envoltorio para no chocar con las
+   transformaciones que GSAP aplica sobre la propia imagen. */
+.artwork-float {
+  position: relative;
+  animation: float 3.6s ease-in-out infinite;
+}
+
 .artwork-wrap img {
   position: relative;
   width: 100%;
   height: auto;
   display: block;
   filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.55));
-  animation: float 3.6s ease-in-out infinite;
+}
+
+.reveal-flash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, rgba(255, 203, 5, 0.6) 40%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.pokedex-entry {
+  margin: 0 0 26px;
+  padding: 18px 22px;
+  border-left: 3px solid var(--red);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 12px 12px 0;
+}
+
+.pokedex-entry-genus {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 8px;
+}
+
+.pokedex-entry-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted-2);
+  font-style: italic;
+  text-wrap: pretty;
 }
 
 .dex-num {

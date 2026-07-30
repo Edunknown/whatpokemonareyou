@@ -29,6 +29,8 @@ export class ResultView {
     this.#refs.resultArtwork.alt = `Ilustración oficial de ${result.name}`;
     this.#refs.resultDexNumber.textContent = `Nº ${result.dexNumber} · POKÉDEX NACIONAL`;
     this.#refs.resultName.textContent = result.name;
+    this.#refs.resultGenus.textContent = result.genus;
+    this.#refs.resultPokedexEntry.textContent = result.pokedexEntry;
     this.#refs.resultExplanation.textContent = result.explanation;
 
     this.#renderTypeBadges(result.types);

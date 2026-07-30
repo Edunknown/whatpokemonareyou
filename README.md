@@ -1,12 +1,23 @@
 # ¿Qué Pokémon eres tú? — Pokédex OS
 
-Test de personalidad con estética *Pokédex OS*: **20 preguntas elegidas al azar de un banco de 100**. Al terminar, la aplicación cruza tu perfil con la [PokeAPI](https://pokeapi.co/) y revela qué Pokémon eres, con su ilustración oficial, tipos, explicación personalizada y estadísticas base.
+Test de personalidad con estética *Pokédex OS*: **20 preguntas elegidas al azar de un banco de 100**. Al terminar, la aplicación lee las **entradas reales de la Pokédex** desde la [PokeAPI](https://pokeapi.co/) y elige el Pokémon de **Kanto o Johto** que mejor te describe, con su ilustración oficial, tipos, estadísticas y la cita textual que justifica el resultado.
 
 ## Cómo funciona
 
 1. Cada opción de respuesta suma puntos ocultos a uno o varios de los 18 tipos Pokémon (fuego, agua, psíquico…). Las preguntas son indirectas: nunca revelan qué tipo puntúan.
-2. Al acabar, se calculan tus **dos tipos dominantes** y se consulta la PokeAPI para obtener los Pokémon que comparten ambos tipos (hasta el nº 1025 de la Pokédex nacional).
-3. La elección dentro de los candidatos es **determinista**: las mismas respuestas producen siempre el mismo Pokémon.
+2. Al acabar se calculan tus **dos tipos dominantes** y se reúnen los Pokémon de la primera y segunda generación (nº 1–251) que comparten ambos tipos.
+3. De esos candidatos se descarga su **entrada real de Pokédex en español** y se puntúa cuánto encaja con tu perfil: cada tipo de personalidad tiene un vocabulario asociado (*voltaje*, *descarga*, *bosque*, *telepatía*…) que se busca dentro del texto oficial.
+4. Gana el Pokémon cuya descripción más te representa, y el resultado **cita las palabras concretas** que provocaron la coincidencia.
+
+## Animación
+
+Las transiciones usan [GSAP](https://gsap.com/) sobre un componente Pokéball construido en CSS:
+
+- Portada: pokéball girando y flotando, más pokéballs a la deriva de fondo.
+- Carga: el **forcejeo de captura** clásico, con destello del botón entre sacudida y sacudida.
+- Resultado: la pokéball **se abre en dos mitades**, estalla un destello y el Pokémon aparece; después entran insignias, texto y barras de estadísticas.
+
+Si GSAP no carga o el sistema pide reducir el movimiento, la interfaz queda estática pero **completamente utilizable**: ninguna animación es requisito para ver el contenido.
 
 ## Ejecutar en local
 
@@ -31,11 +42,12 @@ En **GitHub Pages** funciona directamente: Settings → Pages → Deploy from br
 ├── css/
 │   ├── base.css            # Variables de diseño, reset, animaciones
 │   ├── layout.css          # Escenario, cabecera, barra de progreso
+│   ├── pokeball.css        # Componente Pokéball y sus variantes
 │   └── screens.css         # Estilos de cada pantalla
 └── js/
     ├── config.js           # Configuración global (API, tiempos, límites)
     ├── constants/
-    │   ├── pokemonTypes.js # Perfil de personalidad de cada tipo
+    │   ├── pokemonTypes.js # Perfil y vocabulario de cada tipo
     │   ├── questions.js    # Banco de 100 preguntas con su puntuación
     │   └── ui.js           # Constantes de presentación
     ├── utils/
@@ -47,9 +59,15 @@ En **GitHub Pages** funciona directamente: Settings → Pages → Deploy from br
     │   └── pokeApiService.js # Cliente de la PokeAPI
     ├── core/
     │   ├── quizEngine.js   # Estado, selección de preguntas y puntuación
+    │   ├── descriptionMatcher.js # Encaje perfil ↔ entrada de Pokédex
     │   └── resultBuilder.js # Construcción del modelo de resultado
+    ├── animations/
+    │   ├── motion.js       # Acceso a GSAP y preferencias de movimiento
+    │   ├── pokeballAnimator.js  # Giro, forcejeo y apertura de una pokéball
+    │   └── animationDirector.js # Orquestación de toda la coreografía
     ├── ui/
     │   ├── domRefs.js      # Punto único de acceso al DOM
+    │   ├── pokeballFactory.js # Construcción del DOM de la pokéball
     │   ├── screenManager.js # Navegación entre pantallas
     │   ├── quizView.js     # Render del quiz
     │   └── resultView.js   # Render del resultado
