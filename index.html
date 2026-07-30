@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>¿Qué Pokémon eres tú? — Pokédex OS</title>
+  <meta name="description" content="Test de personalidad: 20 preguntas aleatorias de un banco de 100. El Pokédex escaneará tu perfil y revelará qué Pokémon llevas dentro.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/screens.css">
+</head>
+<body>
+<div class="stage">
+  <div class="glow-top" aria-hidden="true"></div>
+  <div class="glow-bottom" aria-hidden="true"></div>
+
+  <div id="progress" class="progress-track hidden" role="progressbar" aria-label="Progreso del test" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div id="progressFill" class="progress-fill"></div>
+  </div>
+
+  <div class="frame">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <span class="topbar-dot" aria-hidden="true"></span>
+        Pokédex OS — Test de afinidad
+      </div>
+      <span id="counter" class="hidden">Pregunta 01 / 20</span>
+    </header>
+
+    <!-- Landing -->
+    <main id="screen-landing" class="landing">
+      <div class="pokeball" aria-hidden="true">
+        <div class="pokeball-ring"></div>
+        <div class="pokeball-band"></div>
+        <div class="pokeball-core"></div>
+      </div>
+      <div class="landing-inner">
+        <div class="kicker">Análisis de personalidad</div>
+        <h1>¿QUÉ POKÉMON<br><span class="red">ERES</span> <span class="yellow">TÚ</span>?</h1>
+        <p>20 preguntas elegidas al azar de un banco de 100. Ninguna respuesta es la correcta. Al terminar, el Pokédex escaneará tu perfil y revelará qué Pokémon llevas dentro — entre todos los que existen.</p>
+        <button id="btnStart" class="btn-primary">Iniciar escáner</button>
+        <div class="landing-foot">· cada partida es distinta · más de 1000 resultados posibles ·</div>
+      </div>
+    </main>
+
+    <!-- Quiz -->
+    <main id="screen-quiz" class="quiz hidden">
+      <div id="quizKicker" class="quiz-kicker"></div>
+      <h2 id="quizText"></h2>
+      <div id="quizOptions" aria-live="polite"></div>
+    </main>
+
+    <!-- Carga -->
+    <main id="screen-loading" class="loading hidden" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loading-main">Escaneando tu perfil<span class="cursor">_</span></div>
+      <div class="loading-sub">Cruzando datos con la Pokédex nacional…</div>
+    </main>
+
+    <!-- Resultado -->
+    <main id="screen-result" class="result hidden">
+      <div class="result-visual">
+        <div id="resAffinity" class="affinity"></div>
+        <div class="artwork-wrap">
+          <div class="artwork-glow" aria-hidden="true"></div>
+          <img id="resArt" src="" alt="">
+        </div>
+        <div id="resDex" class="dex-num"></div>
+      </div>
+      <div class="result-body">
+        <div class="eyebrow">Eres</div>
+        <h1 id="resName"></h1>
+        <div id="resTypes" class="type-badges"></div>
+        <p id="resExplanation"></p>
+        <div class="traits">
+          <div>
+            <div class="trait-title gold">Tus fortalezas</div>
+            <div id="resFort"></div>
+          </div>
+          <div>
+            <div class="trait-title gray">Tu lado B</div>
+            <div id="resDebil"></div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stats-title">Estadísticas base</div>
+          <div id="resStats"></div>
+        </div>
+        <div class="result-actions">
+          <button id="btnShare" class="btn-share">Compartir resultado</button>
+          <button id="btnRepeat" class="btn-ghost">Repetir test</button>
+        </div>
+        <div id="copiedNote" class="copied-note hidden">✓ Copiado al portapapeles</div>
+      </div>
+    </main>
+
+    <!-- Error -->
+    <main id="screen-error" class="error-screen hidden">
+      <div class="error-kicker">Error de conexión</div>
+      <h2>El Pokédex no ha podido conectar con la red</h2>
+      <p>Revisa tu conexión e inténtalo otra vez.</p>
+      <div class="error-actions">
+        <button id="btnRetry" class="btn-retry">Reintentar</button>
+        <button id="btnHome" class="btn-home">Volver al inicio</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+
+# Dependencias (si se añaden en el futuro)
+node_modules/
+
+# Local
+*.log
+.env
+
+# Config local de Claude Code
+.claude/
