@@ -7,12 +7,13 @@ import { pickBestMatch } from './core/descriptionMatcher.js';
 import { QuizEngine } from './core/quizEngine.js';
 import { buildResult, selectCandidates } from './core/resultBuilder.js';
 import { PokeApiService } from './services/pokeApiService.js';
+import { buildShareCard } from './services/shareCardService.js';
 import { getDomRefs } from './ui/domRefs.js';
 import { createDriftPokeballs, createPokeball } from './ui/pokeballFactory.js';
 import { QuizView } from './ui/quizView.js';
 import { ResultView } from './ui/resultView.js';
 import { ScreenManager } from './ui/screenManager.js';
-import { SHARE_OUTCOMES, shareOrCopy } from './utils/shareUtils.js';
+import { SHARE_OUTCOMES, shareResult } from './utils/shareUtils.js';
 
 /** Cuántas pokéballs decorativas flotan de fondo. */
 const DRIFT_POKEBALL_COUNT = 4;
@@ -52,6 +53,13 @@ class App {
 
   /** @type {object|null} Último resultado calculado. */
   #result = null;
+  /**
+   * Imagen para compartir, generada por adelantado.
+   * Debe estar lista ANTES del clic: en iOS, esperar dentro del manejador
+   * invalidaría el gesto del usuario y la ventana nativa no se abriría.
+   * @type {File|null}
+   */
+  #shareCard = null;
   /** Evita responder dos veces la misma pregunta durante la pausa. */
   #answerLocked = false;
 
@@ -79,12 +87,14 @@ class App {
     await this.#director.playStartTransition();
     this.#engine.start();
     this.#result = null;
+    this.#shareCard = null;
     this.#screens.show(SCREENS.QUIZ);
     this.#renderCurrentQuestion();
   }
 
   #goHome() {
     this.#result = null;
+    this.#shareCard = null;
     this.#screens.show(SCREENS.LANDING);
     this.#director.playLandingIntro();
   }
@@ -163,23 +173,52 @@ class App {
       this.#director.stopCaptureLoop();
       this.#screens.show(SCREENS.RESULT);
       this.#director.playResultReveal();
+      this.#prepareShareCard(this.#result);
     } catch {
       this.#director.stopCaptureLoop();
       this.#screens.show(SCREENS.ERROR);
     }
   }
 
-  async #shareResult() {
+  /**
+   * Genera la tarjeta en segundo plano nada más mostrar el resultado.
+   * Si falla (imagen sin CORS, canvas no disponible…), se compartirá
+   * solo texto y enlace: nunca bloquea la acción de compartir.
+   * @param {object} result
+   */
+  async #prepareShareCard(result) {
+    this.#shareCard = null;
+    try {
+      const card = await buildShareCard(result, CONFIG.SHARE_CARD, CONFIG.SHARE_URL);
+      // Puede haber cambiado de resultado mientras se generaba.
+      if (this.#result === result) {
+        this.#shareCard = card;
+      }
+    } catch {
+      this.#shareCard = null;
+    }
+  }
+
+  /**
+   * Abre la ventana nativa de compartir. Ojo: no puede haber ningún
+   * `await` antes de `shareResult()` o iOS rechazaría la llamada.
+   */
+  #shareResult() {
     if (!this.#result) {
       return;
     }
-    const outcome = await shareOrCopy({
+    const text = `He hecho el test y soy ${this.#result.name} (${this.#result.matchPercent}% de afinidad). ¿Qué Pokémon eres tú?`;
+
+    shareResult({
       title: '¿Qué Pokémon eres?',
-      text: `He hecho el test y soy ${this.#result.name} (${this.#result.matchPercent}% de afinidad). ¿Qué Pokémon eres tú?`,
+      text,
+      url: CONFIG.SHARE_URL,
+      files: this.#shareCard ? [this.#shareCard] : undefined,
+    }).then((outcome) => {
+      if (outcome === SHARE_OUTCOMES.COPIED) {
+        this.#resultView.showCopiedNote();
+      }
     });
-    if (outcome === SHARE_OUTCOMES.COPIED) {
-      this.#resultView.showCopiedNote();
-    }
   }
 }
 

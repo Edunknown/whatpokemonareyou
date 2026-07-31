@@ -37,4 +37,21 @@ export const CONFIG = Object.freeze({
 
   /** Duración (ms) del aviso "copiado al portapapeles". */
   COPY_FEEDBACK_MS: 2500,
+
+  /** Dirección pública de la web, incluida al compartir. */
+  SHARE_URL: 'https://whatpokemonareyou.vercel.app/',
+
+  /**
+   * Tarjeta que se comparte en móvil. Proporción 4:5, la que mejor
+   * se ve en historias y en las vistas previas de mensajería.
+   */
+  SHARE_CARD: Object.freeze({
+    WIDTH: 1080,
+    HEIGHT: 1350,
+    FILENAME: 'que-pokemon-eres.jpg',
+    // JPEG en vez de PNG: el fondo es opaco, así que no hace falta
+    // transparencia, y el fichero pasa de ~1,4 MB a unos 150 KB.
+    MIME: 'image/jpeg',
+    QUALITY: 0.92,
+  }),
 });

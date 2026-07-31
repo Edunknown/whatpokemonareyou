@@ -9,6 +9,17 @@ Test de personalidad con estética *Pokédex OS*: **20 preguntas elegidas al aza
 3. De esos candidatos se descarga su **entrada real de Pokédex en español** y se puntúa cuánto encaja con tu perfil: cada tipo de personalidad tiene un vocabulario asociado (*voltaje*, *descarga*, *bosque*, *telepatía*…) que se busca dentro del texto oficial.
 4. Gana el Pokémon cuya descripción más te representa, y el resultado **cita las palabras concretas** que provocaron la coincidencia.
 
+## Compartir
+
+En móvil (iOS 15+ y Android) el botón abre la **ventana nativa de compartir** con tres cosas: una tarjeta generada en canvas con el Pokémon, su nombre, tipos y afinidad; el texto del resultado; y el enlace a la web.
+
+Dos decisiones que conviene conocer si se toca este código:
+
+- **La imagen se genera por adelantado**, al mostrarse el resultado. `navigator.share()` exige activación por gesto del usuario y en iOS Safari cualquier `await` dentro del manejador la consume, haciendo fallar la llamada con `NotAllowedError`. Por eso `shareResult()` no es `async` y el fichero debe estar listo antes del clic.
+- **La URL va impresa dentro de la tarjeta**, no solo en el campo `url`: varias apps de mensajería descartan ese campo cuando se comparte un fichero, y así el enlace viaja igualmente.
+
+Si el dispositivo no admite compartir ficheros, envía texto y enlace; si no admite compartir en absoluto (escritorio), copia al portapapeles.
+
 ## Animación
 
 Las transiciones usan [GSAP](https://gsap.com/) sobre un componente Pokéball construido en CSS:
